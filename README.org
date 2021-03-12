@@ -32,7 +32,7 @@ I add some extensions to the vanilla BF:
       the pointer stack.
 
 * The builtin function-table
-  - 0: identify, a function return its only argument untouched.
+  - 0: identify, a function returns its only argument untouched.
   - 21: +
   - 22: -
   - 23: *
@@ -46,14 +46,18 @@ I add some extensions to the vanilla BF:
 
   outputs ~a~.
 
-  - ~^0~ push the pointer 0 to the pointer stack;
-  - ~^1>+21~ push the pointer 1 to the pointer stack, move it right
-    for 1 step, then add its value to 21 (21 is the function ~+~);
-  - ~^2>>+50~ push the pointer 2 to the pointer stack, move it right
-    for 2 steps, then add its value to 50;
-  - ~^3>3+47~ push the pointer 3 to the pointer stack, move it right
-    for 3 steps, then add its value to 47;
+  - ~^0~ pushes the pointer 0 to the pointer stack;
+  - ~^1>+21~ pushes the pointer 1 to the pointer stack, moves it right
+    for 1 step, then adds its value to 21 (21 is the function ~+~);
+  - ~^2>>+50~ pushes the pointer 2 to the pointer stack, moves it
+    right for 2 steps, then adds its value from 0 to 50;
+  - ~^3>3+47~ pushes the pointer 3 to the pointer stack, moves it
+    right for 3 steps, then adds its value from 0 to 47;
   - ~@2~ uses the top 2 pointers (^2 and ^3) as arguments, calls the
     function 21 to which the pointer 1 is pointing, places the return
     value (97 here) into the cell to which pointer 0 is pointing;
   - ~^0.~ selects pointer 0 and outputs the value it points to.
+
+* TODO What's next
+  - Command Line debugger.
+  - A GUI window to visualize the Cells and the Pointer Stack.
