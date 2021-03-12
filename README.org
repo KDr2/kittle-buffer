@@ -1,0 +1,59 @@
+#+TITLE: kittle-buffer
+
+* Kittle Buffer
+
+Kittle Buffer, or KBF for short, is an extended Brainf**k
+implementation. KBF could also be explained as KDr2’s Brainf**k.
+
+This is a project I use to teach my kid, that's why I renamed it to
+eliminate the dirty word.
+
+I add some extensions to the vanilla BF:
+
+- Using a number for repetition, ~+23~ means repeating ~+~ for 23
+  times. This works for ~+-<>~;
+- Multiple pointers support:
+  - A pointer stack is added;
+  - ~^~ for selecting pointer:
+    - ~^N~ (N is an integer) selects the Nth pointer, and pushes the
+      selected pointer onto the top of the pointer stack;
+    - ~^~ (without any integer following it )selects the last selected
+      pointer by popping the top pointer from the pointer stack.
+- ~@~ for calling a function:
+  - A builtin function table is provided, each function in the table
+    has an ID;
+  - Before calling a function, we should push many pointers onto the
+    pointer stack:
+    - Where the return value should be placed;
+    - Where the function ID is placed;
+    - The pointers to the arguments, 0, 1, or more pointers are OK,
+      here we call the arguments count ARITY;
+    - Use @ARITY to call the function, calling a function won’t change
+      the pointer stack.
+
+* The builtin function-table
+  - 0: identify, a function return its only argument untouched.
+  - 21: +
+  - 22: -
+  - 23: *
+  - 24: /
+
+* Examples
+  The below code:
+  #+begin_src text
+    ^0^1>+21^2>>+50^3>3+47@2^0.
+  #+end_src
+
+  outputs ~a~.
+
+  - ~^0~ push the pointer 0 to the pointer stack;
+  - ~^1>+21~ push the pointer 1 to the pointer stack, move it right
+    for 1 step, then add its value to 21 (21 is the function ~+~);
+  - ~^2>>+50~ push the pointer 2 to the pointer stack, move it right
+    for 2 steps, then add its value to 50;
+  - ~^3>3+47~ push the pointer 3 to the pointer stack, move it right
+    for 3 steps, then add its value to 47;
+  - ~@2~ uses the top 2 pointers (^2 and ^3) as arguments, calls the
+    function 21 to which the pointer 1 is pointing, places the return
+    value (97 here) into the cell to which pointer 0 is pointing;
+  - ~^0.~ selects pointer 0 and outputs the value it points to.
