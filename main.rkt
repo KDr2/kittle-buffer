@@ -1,6 +1,7 @@
 #lang racket
 
 (require kittle-buffer/kbf)
+(require kittle-buffer/ui)
 
 ;; test
 
@@ -21,11 +22,13 @@
 ;; (test)
 
 ;; entrance
-(define (read-source)
-  (let* ([args (current-command-line-arguments)]
-         [in (if (vector-empty? args)
-                 (current-input-port)
-                 (open-input-file (vector-ref args 0)))])
-    (read-string 10240 in)))
+(define (main)
+  (let* ([args (current-command-line-arguments)])
+    (if (= 0 (vector-length args))
+        (wmain)
+        (let ([in (if (string=? (vector-ref args 0) "-")
+                      (current-input-port)
+                      (open-input-file (vector-ref args 0)))])
+          (run (read-string 10240 in))))))
 
-(run (read-source))
+(main)

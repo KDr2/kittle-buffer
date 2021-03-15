@@ -1,6 +1,6 @@
 #lang racket
 
-(provide parse run step
+(provide parse run step reset-kbf
          set-char-outputer
          BUFFER POINTER-STACK POINTERS)
 

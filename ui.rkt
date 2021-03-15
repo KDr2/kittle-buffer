@@ -5,6 +5,8 @@
 
 (require kittle-buffer/kbf)
 
+(provide wmain)
+
 (define (draw-pointer dc x y id)
   (let ([ps (list (cons x y) (cons (- x 15) (+ y 30)) (cons (+ x 15) (+ y 30)))]
         [text (format "~a" id)])
@@ -58,6 +60,7 @@
                                               (string x)))))
 
     (define running #f)
+    (define paused #f)
     (define instructions '())
 
     (define main-window (new frame%
@@ -83,18 +86,14 @@
                           [parent panel-buttons]
                           [label "Run"]
                           [stretchable-width #t]
-                          [callback (lambda (button event)
-                                      (enabled-buttons #f btn-step btn-continue btn-stop)
-                                      (send tf-output set-value "")
-                                      (run (send tf-code get-value))
-                                      (refresh)
-                                      (enabled-buttons #t btn-step))]))
+                          [callback (lambda (btn evt) (action-run btn evt))]))
     (define btn-step (new button%
                           [parent panel-buttons]
                           [label "Step"]
                           [stretchable-width #t]
                           [callback (lambda (button event)
                                       (when (not running)
+                                        (reset)
                                         (set! instructions (parse (send tf-code get-value)))
                                         (set! running #t))
                                       (let ([vals (step instructions)])
@@ -105,21 +104,40 @@
                                               change-style style-delta-red
                                               (car (vector-ref (car vals) 3))
                                               (+ 1 (cdr (vector-ref (car vals) 3))))
-                                        (refresh)))]))
+                                        (refresh)
+                                        (if (eq? instructions '())
+                                            (begin
+                                              (set! running #f)
+                                              (enable-buttons #t btn-run btn-step)
+                                              (enable-buttons #f btn-continue btn-stop btn-pause))
+                                            (begin
+                                              (enable-buttons #t btn-continue btn-step btn-stop)
+                                              (enable-buttons #f btn-run btn-pause)))))]))
+    (define  btn-pause (new button%
+                            [parent panel-buttons]
+                            [label "Pause"]
+                            [enabled #f]
+                            [stretchable-width #t]
+                            [callback (lambda (button event)
+                                        (set! paused #t))]))
     (define btn-continue (new button%
                               [parent panel-buttons]
                               [label "Continue"]
                               [enabled #f]
                               [stretchable-width #t]
                               [callback (lambda (button event)
-                                          (send tf-code set-value "Continue click"))]))
+                                          (set! paused #f)
+                                          (action-run button event))]))
     (define btn-stop (new button%
                           [parent panel-buttons]
                           [label "Stop"]
                           [enabled #f]
                           [stretchable-width #t]
                           [callback (lambda (button event)
-                                      (send canvas-pointer-stack refresh))]))
+                                      (reset)
+                                      (enable-buttons #t btn-run btn-step)
+                                      (enable-buttons #f btn-continue btn-stop btn-pause))]))
+
     (define  panel-code (new horizontal-panel%
                              [parent main-window]
                              [stretchable-height #t]))
@@ -144,10 +162,54 @@
       (send canvas-pointer-stack
             init-auto-scrollbars (* 42 (+ 4 (length POINTER-STACK))) #f 0 0))
 
-    (define/public (enabled-buttons flag . btns)
+
+    (define/public (enable-buttons flag . btns)
       (map (lambda (b) (send b enable flag)) btns))
+
+    (define/public (reset)
+      (reset-kbf)
+      (set! instructions '())
+      (set! running #f)
+      (set! paused #f)
+      (send tf-output set-value "")
+      (refresh))
+
+    (define/public (action-run button event)
+      (enable-buttons #f btn-run btn-step btn-continue)
+      (enable-buttons #t btn-stop btn-pause)
+      (run-code)
+      (if paused
+          (begin ;; paused
+            (enable-buttons #f btn-run btn-pause)
+            (enable-buttons #t btn-step btn-continue btn-stop))
+          (begin ;; stoped or finished
+            (set! running #f)
+            (enable-buttons #t btn-run btn-step)
+            (enable-buttons #f btn-continue btn-stop btn-pause))))
+
+    (define/public (run-code)
+      (when (not running)
+        (reset)
+        (set! instructions (parse (send tf-code get-value)))
+        (set! running #t))
+      (let loop ([vals (step instructions)])
+        (set! instructions (cdr vals))
+        (when (eq? instructions '())
+          (set! running #f))
+        (send (send tf-code get-editor)
+              change-style style-delta-black 0 'end)
+        (send (send tf-code get-editor)
+              change-style style-delta-red
+              (car (vector-ref (car vals) 3))
+              (+ 1 (cdr (vector-ref (car vals) 3))))
+        (refresh)
+        (sleep/yield 0.5)
+        (when (and running (not paused))
+          (loop (step instructions)))))
     ))
 
-; entrance
-(let* ([kbf-mw (new kbf-win%)])
-  (send kbf-mw show))
+;; entrance
+
+(define (wmain)
+  (let* ([kbf-mw (new kbf-win%)])
+    (send kbf-mw show)))
