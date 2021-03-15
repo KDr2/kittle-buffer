@@ -1,13 +1,20 @@
 #lang racket
 
-(provide parse run)
+(provide parse run step
+         set-char-outputer
+         BUFFER POINTER-STACK POINTERS)
 
-(define BUFFER-SIZE 500)
+(define BUFFER-SIZE 50)
 (define BUFFER (make-vector BUFFER-SIZE 0))
 
 (define POINTER-STACK '(0))
 (define POINTERS (make-hash '((0 . 0))))
 
+(define (output-char chr) (display chr))
+(define (set-char-outputer f) (set! output-char f))
+
+
+;; basic facilities
 (define (current-pointer)
   (let ([ptr-idx (car POINTER-STACK)])
     (hash-ref POINTERS ptr-idx)))
@@ -15,7 +22,6 @@
 (define (current-value)
   (vector-ref BUFFER (current-pointer)))
 
-;; basic facilities
 (define (reset-kbf)
   (set! BUFFER (make-vector BUFFER-SIZE 0))
   (set! POINTER-STACK '(0))
@@ -71,7 +77,7 @@
 ;; .
 (define (ins-dot)
   (let ([ptr (current-pointer)])
-    (display (integer->char (vector-ref BUFFER ptr)))))
+    (output-char (integer->char (vector-ref BUFFER ptr)))))
 
 ;; ^
 (define (ins-caret val)
@@ -193,6 +199,21 @@
         [else (begin
                 (execute-1 ins)
                 (execute (cdr instructions)))]))))
+
+(define (step instructions)
+  (if (equal? instructions '())
+      (cons '() '())
+      (let ([ins (car instructions)])
+        (case (vector-ref ins 0)
+          [(#\[) (if (= (current-value) 0)
+                     (cons ins (cdr (vector-ref ins 2)))
+                     (cons ins (cdr instructions)))]
+          [(#\]) (if (= (current-value) 0)
+                     (cons ins (cdr instructions))
+                     (cons ins (cdr (vector-ref ins 2))))]
+          [else (begin
+                  (execute-1 ins)
+                  (cons ins (cdr instructions)))]))))
 
 (define (run str)
   (reset-kbf)
