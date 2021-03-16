@@ -7,13 +7,18 @@
 
 (provide wmain)
 
+(define init-code "^0^1>+21^2>>+50^3>>>+22@2^0.+29.+7..+3.-79.+43.-5.-4.-33.")
+
 (define (draw-pointer dc x y id)
   (let ([ps (list (cons x y) (cons (- x 15) (+ y 30)) (cons (+ x 15) (+ y 30)))]
         [text (format "~a" id)])
+    (send dc set-pen (if (= id (car POINTER-STACK)) "red" "black") 1 'solid)
     (send dc draw-polygon ps)
-    (send dc draw-text text (- x 5) (+ y 12))))
+    (send dc draw-text text (- x 5) (+ y 12))
+    (send dc set-pen "black" 1 'solid)))
 
 (define (draw-data-buffer canvas dc)
+  (send dc set-smoothing 'aligned)
   (send dc draw-text "Data Buffer" 0 0)
   (send dc draw-rectangle 40 40 80 80)
   (send dc draw-line 40 80 119 80)
@@ -29,17 +34,20 @@
     (draw-pointer dc (+ 20 (* (+ v 3) 42)) 120 k)))
 
 (define (draw-pointer-stack canvas dc)
+  (send dc set-smoothing 'aligned)
   (send dc draw-text "Pointer Stack" 0 0)
-  (send dc draw-rectangle 40 40 80 80)
-  (send dc draw-line 40 80 119 80)
-  (send dc draw-text "Pointer" 50 50)
-  (send dc draw-text "Position" 50 90)
+  (send dc draw-rectangle 40 30 80 80)
+  (send dc draw-line 40 70 119 70)
+  (send dc draw-text "Pointer" 50 40)
+  (send dc draw-text "Position" 50 80)
   (for ([i (in-range (length POINTER-STACK))]
         [p POINTER-STACK])
-    (send dc draw-rectangle (* (+ i 3) 42) 40 40 80)
-    (send dc draw-line (* (+ i 3) 42) 80 (+ 39 (* (+ i 3) 42)) 80)
-    (send dc draw-text (format "~a" p) (+ 12 (* (+ i 3) 42)) 52)
-    (send dc draw-text (format "~a" (hash-ref POINTERS p)) (+ 12 (* (+ i 3) 42)) 92)))
+       (send dc set-pen (if (= i 0) "red" "black") 1 'solid)
+       (send dc draw-rectangle (* (+ i 3) 42) 30 40 80)
+       (send dc draw-line (* (+ i 3) 42) 70 (+ 39 (* (+ i 3) 42)) 70)
+       (send dc draw-text (format "~a" p) (+ 12 (* (+ i 3) 42)) 42)
+       (send dc draw-text (format "~a" (hash-ref POINTERS p)) (+ 12 (* (+ i 3) 42)) 82)
+       (send dc set-pen "black" 1 'solid)))
 
 
 
@@ -152,7 +160,7 @@
                          [parent panel-code]
                          [label "Code:"]
                          [style '(multiple vertical-label)]
-                         [init-value "^0^1>+21^2>>+50^3>>>+50@2^0."]))
+                         [init-value init-code]))
     (define tf-output (new text-field%
                            [parent panel-code]
                            [label "Output:"]
