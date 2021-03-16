@@ -179,7 +179,14 @@
       (set! running #f)
       (set! paused #f)
       (send tf-output set-value "")
-      (refresh))
+      (refresh)
+      (set-char-inputer (lambda ()
+                          (let ([val (get-text-from-user
+                                      "KBF" "Please enter a character" main-window
+                                      #:validate (lambda (x) (= 1 (string-length x))))])
+                            (if (string? val)
+                                (string-ref val 0)
+                                (integer->char 0))))))
 
     (define/public (action-run button event)
       (enable-buttons #f btn-run btn-step btn-continue)
