@@ -1,7 +1,7 @@
 #lang racket
 
 (provide parse run step reset-kbf
-         set-char-outputer
+         set-char-outputer set-char-inputer
          BUFFER POINTER-STACK POINTERS)
 
 (define BUFFER-SIZE 50)
@@ -12,6 +12,8 @@
 
 (define (output-char chr) (display chr))
 (define (set-char-outputer f) (set! output-char f))
+(define input-char read-char)
+(define (set-char-inputer f) (set! input-char f))
 
 
 ;; basic facilities
@@ -71,7 +73,7 @@
 ;; ,
 (define (ins-comma)
   (let ([ptr (current-pointer)]
-        [val (char->integer (read-char))])
+        [val (char->integer (input-char))])
     (vector-set! BUFFER ptr val)))
 
 ;; .
@@ -160,7 +162,7 @@
 ;; find [] pairs
 (define (parse-2 instructions)
   (let ([lefts '()])
-    (for ([i (in-range (- (length instructions) 1))])
+    (for ([i (in-range (length instructions))])
       (when (char=? #\[ (vector-ref (list-ref instructions i) 0))
         (set! lefts (cons (list-tail instructions i) lefts)))
       (when (char=? #\] (vector-ref (list-ref instructions i) 0))

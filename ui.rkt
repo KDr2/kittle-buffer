@@ -138,6 +138,13 @@
                                       (enable-buttons #t btn-run btn-step)
                                       (enable-buttons #f btn-continue btn-stop btn-pause))]))
 
+    (define slider-delay (new slider%
+                              (label "Delay")
+                              (parent panel-buttons)
+                              (min-value 0)
+                              (max-value 100)
+                              (init-value 50)))
+
     (define  panel-code (new horizontal-panel%
                              [parent main-window]
                              [stretchable-height #t]))
@@ -203,7 +210,7 @@
               (car (vector-ref (car vals) 3))
               (+ 1 (cdr (vector-ref (car vals) 3))))
         (refresh)
-        (sleep/yield 0.5)
+        (sleep/yield (/ (send slider-delay get-value) 100.0))
         (when (and running (not paused))
           (loop (step instructions)))))
     ))
