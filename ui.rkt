@@ -7,7 +7,7 @@
 
 (provide wmain)
 
-(define init-code "^0^1>+21^2>>+50^3>>>+22@2^0.+29.+7..+3.-79.+43.-5.-4.-33.")
+(define init-code "^0^1>+21^2>>+50^3>>>+22@2^0.+29.+7..+3.-79.+43.-9.+4.-37.")
 
 (define (draw-pointer dc x y id)
   (let ([ps (list (cons x y) (cons (- x 15) (+ y 30)) (cons (+ x 15) (+ y 30)))]
