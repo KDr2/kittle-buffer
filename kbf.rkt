@@ -143,7 +143,7 @@
                                       (vector-set! current-ins 1 (+ n (* 10 a)))))
                                 (parse-error (cons 'bad-arg current-ins)))]
        [(char-whitespace? chr) '()]
-       [else (parse-error (cons 'bad-instruction chr idx))]))
+       [else (parse-error (cons 'bad-instruction (cons chr idx)))]))
     (vector-set! current-ins 3
                  (cons (vector-ref current-ins 3) (- (string-length str) 1)))
     (set! instructions (append instructions (list current-ins)))
@@ -204,7 +204,7 @@
 
 (define (step instructions)
   (if (equal? instructions '())
-      (cons '() '())
+      (cons '#() '())
       (let ([ins (car instructions)])
         (case (vector-ref ins 0)
           [(#\[) (if (= (current-value) 0)
