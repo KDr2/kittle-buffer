@@ -1,5 +1,7 @@
 #lang racket
 
+(require srfi/13) ; the string SRFI
+
 (provide parse run step reset-kbf
          set-char-outputer set-char-inputer
          BUFFER POINTER-STACK POINTERS)
@@ -27,7 +29,9 @@
 (define (reset-kbf)
   (set! BUFFER (make-vector BUFFER-SIZE 0))
   (set! POINTER-STACK '(0))
-  (set! POINTERS (make-hash '((0 . 0)))))
+  (set! POINTERS (make-hash '((0 . 0))))
+  (set! output-char display)
+  (set! input-char read-char))
 
 (define (runtime-error err)
   (raise (cons 'RUNTIME-ERROR err)))
@@ -105,7 +109,6 @@
         (vector-set! BUFFER (hash-ref POINTERS retv-ptr) retv))))
 
 ;; -- parser --
-
 ;; instructions is a list of (symbol arg peer pos)
 
 (define (instr? chr)
@@ -119,11 +122,29 @@
     [(#\+ #\- #\< #\> #\^ #\@) #t]
     [else #f]))
 
+;; ! support
+(define (set-string-inputer str)
+  (let* ([idx 0]
+         [f (lambda ()
+              (let ([p idx])
+                (set! idx (modulo (+ 1 idx) (string-length str)))
+                (string-ref str p)))])
+    (set-char-inputer f)))
+
+(define (remove-bang str)
+  (let ([p (string-contains str "!")])
+    (if p
+        (begin
+          (set-string-inputer (substring str (+ 1 p)))
+          (substring str 0 p))
+        str)))
+
 ;; parse instructions
 (define (parse-0 str)
   (let ([instructions '()]
         [current-ins-start 0]
-        [current-ins (make-vector 4 -1)])
+        [current-ins (make-vector 4 -1)]
+        [str (remove-bang str)])
     (for ([chr str]
           [idx (in-range (string-length str))])
       (cond

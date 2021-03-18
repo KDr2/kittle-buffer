@@ -30,6 +30,7 @@
         here we call the arguments count ARITY;
       - Use @ARITY to call the function, calling a function won’t change
         the pointer stack.
+  - ~!~ for input data, like what [[https://fatiherikli.github.io/brainfuck-visualizer/][this BF visualizer]] does.
 
   It has a graphic user interface:
   [[https://res.cloudinary.com/kdr2/image/upload/v1615927877/dev/kbf.gif]]
