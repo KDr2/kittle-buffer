@@ -62,10 +62,6 @@
   (class object%
 
     (super-new)
-    (set-char-outputer (lambda (x)
-                         (send tf-output set-value
-                               (string-append (send tf-output get-value)
-                                              (string x)))))
 
     (define running #f)
     (define paused #f)
@@ -195,7 +191,11 @@
                                       #:validate (lambda (x) (= 1 (string-length x))))])
                             (if (string? val)
                                 (string-ref val 0)
-                                (integer->char 0))))))
+                                (integer->char 0)))))
+      (set-char-outputer (lambda (x)
+                           (send tf-output set-value
+                                 (string-append (send tf-output get-value)
+                                                (string x))))))
 
     (define/public (action-run button event)
       (enable-buttons #f btn-run btn-step btn-continue)
