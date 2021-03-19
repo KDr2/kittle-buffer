@@ -88,7 +88,8 @@
 ;; ^
 (define (ins-caret val)
   (if (< val 0)
-      (set! POINTER-STACK (cdr POINTER-STACK))
+      (when (> (length POINTER-STACK) 1)
+        (set! POINTER-STACK (cdr POINTER-STACK)))
       (begin
         (set! POINTER-STACK (cons val POINTER-STACK))
         (when (not (hash-has-key? POINTERS val))
