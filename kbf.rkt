@@ -42,6 +42,10 @@
 ;; built-in functions
 (define BUILTIN-FUNCTIONS (make-hash))
 (hash-set! BUILTIN-FUNCTIONS 0 (lambda (x) x))
+(hash-set! BUILTIN-FUNCTIONS 1 (lambda (x)
+                                 (let ([s (~a x)])
+                                   (for ([c s]) (output-char c))
+                                   (string-length s))))
 (hash-set! BUILTIN-FUNCTIONS 21 +)
 (hash-set! BUILTIN-FUNCTIONS 22 -)
 (hash-set! BUILTIN-FUNCTIONS 23 *)
@@ -83,7 +87,7 @@
 ;; .
 (define (ins-dot)
   (let ([ptr (current-pointer)])
-    (output-char (integer->char (vector-ref BUFFER ptr)))))
+    (output-char (integer->char (modulo (vector-ref BUFFER ptr) 256)))))
 
 ;; ^
 (define (ins-caret val)
@@ -110,7 +114,7 @@
         (vector-set! BUFFER (hash-ref POINTERS retv-ptr) retv))))
 
 ;; -- parser --
-;; instructions is a list of (symbol arg peer pos)
+;; instructions is a list of vector(symbol arg peer pos)
 
 (define (instr? chr)
   (case chr
