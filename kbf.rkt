@@ -40,6 +40,8 @@
   (raise (cons 'PARSE-ERROR err)))
 
 ;; built-in functions
+(define (b2i x) (if x 1 0))
+
 (define BUILTIN-FUNCTIONS (make-hash))
 (hash-set! BUILTIN-FUNCTIONS 0 (lambda (x) x))
 (hash-set! BUILTIN-FUNCTIONS 1 (lambda (x)
@@ -49,7 +51,20 @@
 (hash-set! BUILTIN-FUNCTIONS 21 +)
 (hash-set! BUILTIN-FUNCTIONS 22 -)
 (hash-set! BUILTIN-FUNCTIONS 23 *)
-(hash-set! BUILTIN-FUNCTIONS 24 /)
+(hash-set! BUILTIN-FUNCTIONS 24 quotient)
+(hash-set! BUILTIN-FUNCTIONS 25 modulo)
+(hash-set! BUILTIN-FUNCTIONS 26 expt)
+(hash-set! BUILTIN-FUNCTIONS 27 (compose b2i =))
+(hash-set! BUILTIN-FUNCTIONS 28 (compose b2i >))
+(hash-set! BUILTIN-FUNCTIONS 29 (compose b2i <))
+(hash-set! BUILTIN-FUNCTIONS 30 (compose b2i >=))
+(hash-set! BUILTIN-FUNCTIONS 31 (compose b2i <=))
+(hash-set! BUILTIN-FUNCTIONS 32 bitwise-ior)
+(hash-set! BUILTIN-FUNCTIONS 33 bitwise-and)
+(hash-set! BUILTIN-FUNCTIONS 34 bitwise-xor)
+(hash-set! BUILTIN-FUNCTIONS 35 arithmetic-shift)
+(hash-set! BUILTIN-FUNCTIONS 36 random)
+
 
 ;; instructions
 ;; +
@@ -105,7 +120,8 @@
       (runtime-error 'bad-function-call)
       (let* ([retv-ptr (list-ref POINTER-STACK (+ 1 val))]
              [func-ptr (list-ref POINTER-STACK val)]
-             [args-ptr (map (lambda (x) (list-ref POINTER-STACK x)) (build-list val values))]
+             [args-ptr (map (lambda (x) (list-ref POINTER-STACK x))
+                            (reverse (build-list val values)))]
              [retv 0]
              [func (hash-ref BUILTIN-FUNCTIONS
                              (vector-ref BUFFER (hash-ref POINTERS func-ptr)))]

@@ -44,11 +44,25 @@
     - ~racket main.rkt -~ will read BF/KBF source from ~stdin~.
 
 * The builtin function-table
-  - 0: identify, a function returns its only argument untouched.
-  - 21: +
-  - 22: -
-  - 23: *
-  - 24: /
+  - 0: @1, identify, a function returns its only argument untouched.
+  - 1: @1, outputs the number literally, instead of converting it to a
+    char, returns the count of chars it has printed out.
+  - 21: @2, +
+  - 22: @1, @2, -
+  - 23: @2, *
+  - 24: @2, /
+  - 25: @2, modulo
+  - 26: @2, power, returns arg-0 raised to the power of arg-1.
+  - 27: @2, =
+  - 28: @2, >
+  - 29: @2, <
+  - 30: @2, >=
+  - 31: @2, <=
+  - 32: @2, bitwise or
+  - 33: @2, bitwise and
+  - 34: @2, bitwise xor
+  - 35: @2, bitwise shift
+  - 36: @2, random
 * Examples
   The below code:
   #+begin_src text
