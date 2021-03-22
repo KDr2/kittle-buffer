@@ -38,18 +38,18 @@
 * How to use
   - install racket
   - clone the source, run ~raco pkg install~ in the project direcotry
-  - run ~main.rkt~
-    - ~racket main.rkt~ will start with the GUI;
-    - ~racket main.rkt src.bf~ will run the BF/KBF code in the file ~src.bf~;
-    - ~racket main.rkt -~ will read BF/KBF source from ~stdin~.
+  - run ~kbf.rkt~
+    - ~racket kbf.rkt~ will start with the GUI;
+    - ~racket kbf.rkt src.bf~ will run the BF/KBF code in the file ~src.bf~;
+    - ~racket kbf.rkt -~ will read BF/KBF source from ~stdin~.
 
 * The builtin function-table
   - 0: @1, identify, a function returns its only argument untouched.
   - 1: @1, outputs the number literally, instead of converting it to a
     char, returns the count of chars it has printed out.
-  - 21: @2, +
-  - 22: @1, @2, -
-  - 23: @2, *
+  - 21: @N (N>=1), +
+  - 22: @N (N>=1), -
+  - 23: @N (N>=1), *
   - 24: @2, /
   - 25: @2, modulo
   - 26: @2, power, returns arg-0 raised to the power of arg-1.

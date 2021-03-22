@@ -3,7 +3,7 @@
 (require racket/gui/base)
 (require racket/draw)
 
-(require kittle-buffer/kbf)
+(require kittle-buffer/interpreter)
 
 (provide wmain)
 

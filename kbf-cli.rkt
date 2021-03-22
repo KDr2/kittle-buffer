@@ -1,6 +1,6 @@
 #lang racket
 
-(require kittle-buffer/kbf)
+(require kittle-buffer/interpreter)
 
 ;; test
 
