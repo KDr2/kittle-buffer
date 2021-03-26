@@ -4,7 +4,8 @@
 
 (provide parse run step reset-kbf
          set-char-outputer set-char-inputer
-         BUFFER POINTER-STACK POINTERS)
+         BUFFER POINTER-STACK POINTERS
+         set-error-handler)
 
 (define BUFFER-SIZE 50)
 (define BUFFER (make-vector BUFFER-SIZE 0))
@@ -17,6 +18,8 @@
 (define input-char read-char)
 (define (set-char-inputer f) (set! input-char f))
 
+(define error-handler raise)
+(define (set-error-handler eh) (set! error-handler eh))
 
 ;; basic facilities
 (define (current-pointer)
@@ -34,10 +37,10 @@
   (set! input-char read-char))
 
 (define (runtime-error err)
-  (raise (cons 'RUNTIME-ERROR err)))
+  (error-handler (cons 'RUNTIME-ERROR err)))
 
 (define (parse-error err)
-  (raise (cons 'PARSE-ERROR err)))
+  (error-handler (cons 'PARSE-ERROR err)))
 
 ;; built-in functions
 (define (b2i x) (if x 1 0))
@@ -117,16 +120,22 @@
 ;; @
 (define (ins-at val)
   (if (< (length POINTER-STACK) (+ 2 val))
-      (runtime-error 'bad-function-call)
+      (runtime-error '(bad-function-call . arity))
       (let* ([retv-ptr (list-ref POINTER-STACK (+ 1 val))]
              [func-ptr (list-ref POINTER-STACK val)]
              [args-ptr (map (lambda (x) (list-ref POINTER-STACK x))
                             (reverse (build-list val values)))]
              [retv 0]
-             [func (hash-ref BUILTIN-FUNCTIONS
-                             (vector-ref BUFFER (hash-ref POINTERS func-ptr)))]
+             [func-key (vector-ref BUFFER (hash-ref POINTERS func-ptr))]
+             [func (if (hash-has-key? BUILTIN-FUNCTIONS func-key)
+                       (hash-ref BUILTIN-FUNCTIONS func-key)
+                       (runtime-error '(bad-function-call . function-id)))]
              [args (map (lambda (x) (vector-ref BUFFER (hash-ref POINTERS x))) args-ptr)])
-        (set! retv (apply func args))
+        (with-handlers
+            ([(lambda (v) #t)
+              (lambda (ex)
+                (runtime-error (cons 'bad-function-call ex)))])
+          (set! retv (apply func args)))
         (vector-set! BUFFER (hash-ref POINTERS retv-ptr) retv))))
 
 ;; -- parser --

@@ -98,7 +98,7 @@
                           [callback (lambda (button event)
                                       (when (not running)
                                         (reset)
-                                        (set! instructions (safe-parse (send tf-code get-value)))
+                                        (set! instructions (parse (send tf-code get-value)))
                                         (set! running #t))
                                       (let ([vals (step instructions)])
                                         (when (> (vector-length (car vals)) 0)
@@ -195,7 +195,10 @@
       (set-char-outputer (lambda (x)
                            (send tf-output set-value
                                  (string-append (send tf-output get-value)
-                                                (string x))))))
+                                                (string x)))))
+      (set-error-handler (lambda (ex)
+                           (message-box "Error" (format "~a" ex))
+                           (raise ex))))
 
     (define/public (action-run button event)
       (enable-buttons #f btn-run btn-step btn-continue)
@@ -210,18 +213,10 @@
             (enable-buttons #t btn-run btn-step)
             (enable-buttons #f btn-continue btn-stop btn-pause))))
 
-    (define/public (safe-parse code)
-      (with-handlers
-          ([(lambda (v) #t)
-            (lambda (ex)
-              (message-box "Error" (format "~a" ex))
-              '())])
-        (parse code)))
-
     (define/public (run-code)
       (when (not running)
         (reset)
-        (set! instructions (safe-parse (send tf-code get-value)))
+        (set! instructions (parse (send tf-code get-value)))
         (set! running #t))
       (let loop ([vals (step instructions)])
         (set! instructions (cdr vals))
