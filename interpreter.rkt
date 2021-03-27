@@ -165,7 +165,8 @@
   (let ([p (string-contains str "!")])
     (if p
         (begin
-          (set-string-inputer (substring str (+ 1 p)))
+          (when (< p (sub1 (string-length str)))
+            (set-string-inputer (substring str (+ 1 p))))
           (substring str 0 p))
         str)))
 
