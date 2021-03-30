@@ -157,12 +157,14 @@
                          [parent panel-code]
                          [label "Code:"]
                          [style '(multiple vertical-label)]
-                         [init-value init-code]))
+                         [init-value init-code]
+                         [font (make-object font% 16 'default)]))
     (define tf-output (new text-field%
                            [parent panel-code]
                            [label "Output:"]
                            [style '(multiple vertical-label)]
-                           [enabled #f]))
+                           [enabled #f]
+                           [font (make-object font% 16 'default)]))
 
     (define/public (show) (send main-window show #t))
 
@@ -232,8 +234,7 @@
           (refresh)
           (sleep/yield (/ (send slider-delay get-value) 100.0)))
         (when (and running (not paused))
-          (loop (step instructions)))))
-    ))
+          (loop (step instructions)))))))
 
 ;; entrance
 
