@@ -2,6 +2,7 @@
 
 (require racket/gui/base)
 (require racket/draw)
+(require framework)
 
 (require kittle-buffer/interpreter)
 
@@ -150,7 +151,7 @@
                               (max-value 100)
                               (init-value 50)))
 
-    (define  panel-code (new horizontal-panel%
+    (define  panel-code (new panel:horizontal-dragable% ; horizontal-panel%
                              [parent main-window]
                              [stretchable-height #t]))
     (define tf-code (new text-field%
@@ -158,14 +159,13 @@
                          [label "Code:"]
                          [style '(multiple vertical-label)]
                          [init-value init-code]
-                         [font (make-object font% 16 'default)]))
+                         [font (make-object font% 14 'default)]))
     (define tf-output (new text-field%
                            [parent panel-code]
                            [label "Output:"]
                            [style '(multiple vertical-label)]
                            [enabled #f]
-                           [min-width 360]
-                           [font (make-object font% 16 'default)]))
+                           [font (make-object font% 14 'default)]))
 
     (define/public (show) (send main-window show #t))
 
