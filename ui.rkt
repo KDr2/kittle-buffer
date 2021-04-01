@@ -8,7 +8,7 @@
 
 (provide wmain)
 
-(define init-code "^0^1>+21^2>>+50^3>>>+22@2\n^0.+29.+7..+3.-79.+43.-9.+4.-37.")
+(define init-code "^0^1>+21^2>>+50^3>>>+22@2^0.+29.+7..+3.-79.+43.-9.+4.-37.")
 
 (define (draw-pointer dc x y id)
   (let ([ps (list (cons x y) (cons (- x 15) (+ y 30)) (cons (+ x 15) (+ y 30)))]
@@ -158,7 +158,7 @@
                          [parent panel-code]
                          [label "Code:"]
                          [style '(multiple vertical-label)]
-                         [init-value init-code]
+                         ;; [init-value init-code]
                          [font (make-object font% 14 'default)]))
     (define tf-output (new text-field%
                            [parent panel-code]
@@ -216,6 +216,9 @@
             (enable-buttons #t btn-run btn-step)
             (enable-buttons #f btn-continue btn-stop btn-pause))))
 
+    (define/public (set-code code)
+      (send tf-code set-value init-code))
+
     (define/public (run-code)
       (when (not running)
         (reset)
@@ -241,4 +244,5 @@
 
 (define (wmain)
   (let* ([kbf-mw (new kbf-win%)])
+    (send kbf-mw set-code init-code)
     (send kbf-mw show)))
