@@ -36,10 +36,10 @@
   [[https://res.cloudinary.com/kdr2/image/upload/v1615927877/dev/kbf.gif]]
 
 * How to use
-  There are [[http://cxan.kdr2.com/kittle-buffer/][pre-built binaries hosted here]]:
-  - [[http://cxan.kdr2.com/kittle-buffer/kittle-buffer-linux-v0.1.zip][Linux]]
-  - [[http://cxan.kdr2.com/kittle-buffer/kittle-buffer-win64-v0.1.zip][Windows]]
-  - [[http://cxan.kdr2.com/kittle-buffer/kittle-buffer-macos-v0.1.zip][macOS]]
+  There are [[https://cxan.kdr2.com/kittle-buffer/][pre-built binaries hosted here]]:
+  - [[https://cxan.kdr2.com/kittle-buffer/kittle-buffer-linux-v0.1.zip][Linux]]
+  - [[https://cxan.kdr2.com/kittle-buffer/kittle-buffer-win64-v0.1.zip][Windows]]
+  - [[https://cxan.kdr2.com/kittle-buffer/kittle-buffer-macos-v0.1.zip][macOS]]
 
   Or you can run it from source:
   - install racket
