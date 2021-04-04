@@ -10,6 +10,35 @@
 
 (define init-code "^0^1>+21^2>>+50^3>>>+22@2^0.+29.+7..+3.-79.+43.-9.+4.-37.")
 
+(define cur-arity 0)
+(define (update-arity ins)
+  (if (char=? #\@ (vector-ref ins 0))
+      (set! cur-arity (vector-ref ins 1))
+      (set! cur-arity 0)))
+
+(define no-brush (new brush% [style 'transparent]))
+(define orange-brush (new brush% [color "orange"]))
+(define yellow-brush (new brush% [color "yellow"]))
+(define green-brush (new brush% [color "green"]))
+
+(define (brush-for-data idx)
+  (if (= cur-arity 0)
+      no-brush
+      (cond
+       [(member idx (map pointer (stream->list (in-range cur-arity)))) yellow-brush] ; args
+       [(= idx (pointer cur-arity)) orange-brush] ; function
+       [(= idx (pointer (+ 1 cur-arity))) green-brush] ; return value
+       [else no-brush])))
+
+(define (brush-for-ptr idx)
+  (if (= cur-arity 0)
+      no-brush
+      (cond
+       [(< idx cur-arity) yellow-brush] ; args
+       [(= idx cur-arity) orange-brush] ; function
+       [(= idx (+ 1 cur-arity)) green-brush] ; return value
+       [else no-brush])))
+
 (define (draw-pointer dc x y id)
   (let ([ps (list (cons x y) (cons (- x 15) (+ y 30)) (cons (+ x 15) (+ y 30)))]
         [text (format "~a" id)])
@@ -27,6 +56,7 @@
   (send dc draw-text "Value" 50 90)
   (for ([i (in-range (vector-length BUFFER))]
         [v BUFFER])
+    (send dc set-brush (brush-for-data i))
     (send dc draw-rectangle (* (+ i 3) 42) 40 40 80)
     (send dc draw-line (* (+ i 3) 42) 80 (+ 39 (* (+ i 3) 42)) 80)
     (send dc draw-text (format "~a" i) (+ 4 (* (+ i 3) 42)) 52)
@@ -43,12 +73,13 @@
   (send dc draw-text "Position" 50 80)
   (for ([i (in-range (length POINTER-STACK))]
         [p POINTER-STACK])
-       (send dc set-pen (if (= i 0) "red" "black") 1 'solid)
-       (send dc draw-rectangle (* (+ i 3) 42) 30 40 80)
-       (send dc draw-line (* (+ i 3) 42) 70 (+ 39 (* (+ i 3) 42)) 70)
-       (send dc draw-text (format "~a" p) (+ 12 (* (+ i 3) 42)) 42)
-       (send dc draw-text (format "~a" (hash-ref POINTERS p)) (+ 12 (* (+ i 3) 42)) 82)
-       (send dc set-pen "black" 1 'solid)))
+    (send dc set-pen (if (= i 0) "red" "black") 1 'solid)
+    (send dc set-brush (brush-for-ptr i))
+    (send dc draw-rectangle (* (+ i 3) 42) 30 40 80)
+    (send dc draw-line (* (+ i 3) 42) 70 (+ 39 (* (+ i 3) 42)) 70)
+    (send dc draw-text (format "~a" p) (+ 12 (* (+ i 3) 42)) 42)
+    (send dc draw-text (format "~a" (hash-ref POINTERS p)) (+ 12 (* (+ i 3) 42)) 82)
+    (send dc set-pen "black" 1 'solid)))
 
 
 
@@ -103,6 +134,7 @@
                                         (set! running #t))
                                       (let ([vals (step instructions)])
                                         (when (> (vector-length (car vals)) 0)
+                                          (update-arity (car vals))
                                           (set! instructions (cdr vals))
                                           (send (send tf-code get-editor)
                                                 change-style style-delta-black 0 'end)
@@ -183,6 +215,7 @@
 
     (define/public (reset)
       (reset-kbf)
+      (set! cur-arity 0)
       (set! instructions '())
       (set! running #f)
       (set! paused #f)
@@ -229,6 +262,7 @@
         (when (eq? instructions '())
           (set! running #f))
         (when (> (vector-length (car vals)) 0)
+          (update-arity (car vals))
           (send (send tf-code get-editor)
                 change-style style-delta-black 0 'end)
           (send (send tf-code get-editor)

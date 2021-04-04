@@ -5,6 +5,7 @@
 (provide parse run step reset-kbf
          set-char-outputer set-char-inputer
          BUFFER POINTER-STACK POINTERS
+         pointer
          set-error-handler)
 
 (define BUFFER-SIZE 50)
@@ -22,9 +23,11 @@
 (define (set-error-handler eh) (set! error-handler eh))
 
 ;; basic facilities
-(define (current-pointer)
-  (let ([ptr-idx (car POINTER-STACK)])
+
+(define (pointer idx)
+  (let ([ptr-idx (list-ref POINTER-STACK idx)])
     (hash-ref POINTERS ptr-idx)))
+(define (current-pointer) (pointer 0))
 
 (define (current-value)
   (vector-ref BUFFER (current-pointer)))
