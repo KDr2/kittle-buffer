@@ -147,7 +147,7 @@
 (define (instr? chr)
   (case chr
     [(#\+ #\- #\< #\> #\[ #\] #\, #\.) #t] ;; vanilla BF
-    [(#\^ #\@) #t] ;; kbf extension
+    [(#\^ #\@ #\?) #t] ;; kbf extension
     [else #f]))
 
 (define (can-have-arg chr)
@@ -245,6 +245,7 @@
     [(#\.) (ins-dot)]
     [(#\^) (ins-caret (vector-ref ins 1))]
     [(#\@) (ins-at (vector-ref ins 1))]
+    [(#\?) '()]
     [else (runtime-error (cons 'bad-instruction ins))]))
 
 (define (execute instructions)

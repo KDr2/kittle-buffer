@@ -263,6 +263,8 @@
           (set! running #f))
         (when (> (vector-length (car vals)) 0)
           (update-arity (car vals))
+          (when (char=? #\? (vector-ref (car vals) 0))
+            (set! paused #t))
           (send (send tf-code get-editor)
                 change-style style-delta-black 0 'end)
           (send (send tf-code get-editor)
