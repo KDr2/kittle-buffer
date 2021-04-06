@@ -8,7 +8,7 @@
 
 (provide wmain)
 
-(define init-code "^0^1>+21^2>>+50^3>>>+22@2^0.+29.+7..+3.-79.+43.-9.+4.-37.")
+(define init-code "^0^1>+21^2>>+50^3>>>+22?@2^0.+29.+7..+3.-79.+43.-9.+4.-37.")
 
 (define cur-arity 0)
 (define (update-arity ins)
@@ -100,7 +100,7 @@
     (define instructions '())
 
     (define main-window (new frame%
-                             [label "KBF - Kittle-Buffer"]
+                             [label "KBF - Kittle-Buffer v0.2-alpha"]
                              [width 800]
                              [height 600]))
     (define canvas-buffer (new canvas%
@@ -183,6 +183,11 @@
                               (max-value 100)
                               (init-value 50)))
 
+    (define chb-pause-at-q (new check-box%
+                              (label "Pause at ?")
+                              (parent panel-buttons)
+                              (value #f)))
+
     (define  panel-code (new panel:horizontal-dragable% ; horizontal-panel%
                              [parent main-window]
                              [stretchable-height #t]))
@@ -263,7 +268,9 @@
           (set! running #f))
         (when (> (vector-length (car vals)) 0)
           (update-arity (car vals))
-          (when (char=? #\? (vector-ref (car vals) 0))
+          (when (and
+                 (send chb-pause-at-q get-value)
+                 (char=? #\? (vector-ref (car vals) 0)))
             (set! paused #t))
           (send (send tf-code get-editor)
                 change-style style-delta-black 0 'end)
