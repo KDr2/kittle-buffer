@@ -1,90 +1,22 @@
 #+TITLE: kittle-buffer
 
-* Kittle Buffer
+Kittle Buffer, or KBF for short, is an extended Brainf**k
+implementation. KBF could also be explained as KDr2’s Brainf**k.
 
-  Kittle Buffer, or KBF for short, is an extended Brainf**k
-  implementation. KBF could also be explained as KDr2’s Brainf**k.
+This is a project I use to teach my kid, that's why I renamed it to
+eliminate the dirty word.
 
-  This is a project I use to teach my kid, that's why I renamed it to
-  eliminate the dirty word.
+I add some extensions to the vanilla BF:
 
-  I add some extensions to the vanilla BF:
+- ~^~ for multiple pointers support;
+- ~@~ for calling a function;
+- Number for repetition, ~+23~ means repeating ~+~ for 23
+  times. This works for ~+-<>~;
+- ~!~ for input data, like what [[https://fatiherikli.github.io/brainfuck-visualizer/][this BF visualizer]] does;
+- ~?~ to set a break point under GUI mode.
 
-  - Using a number for repetition, ~+23~ means repeating ~+~ for 23
-    times. This works for ~+-<>~;
-  - Multiple pointers support:
-    - A pointer stack is added;
-    - ~^~ for selecting pointer:
-      - ~^N~ (N is an integer) selects the Nth pointer, and pushes the
-        selected pointer onto the top of the pointer stack;
-      - ~^~ (without any integer following it )selects the last selected
-        pointer by popping the top pointer from the pointer stack.
-  - ~@~ for calling a function:
-    - A builtin function table is provided, each function in the table
-      has an ID;
-    - Before calling a function, we should push many pointers onto the
-      pointer stack:
-      - Where the return value should be placed;
-      - Where the function ID is placed;
-      - The pointers to the arguments, 0, 1, or more pointers are OK,
-        here we call the arguments count ARITY;
-      - Use @ARITY to call the function, calling a function won’t change
-        the pointer stack.
-  - ~!~ for input data, like what [[https://fatiherikli.github.io/brainfuck-visualizer/][this BF visualizer]] does.
+Here is a simple demonstration of the GUI window:
 
-  It has a graphic user interface:
-  [[https://res.cloudinary.com/kdr2/image/upload/v1615927877/dev/kbf.gif]]
+[[https://res.cloudinary.com/kdr2/image/upload/v1617707587/dev/kbf-v0.2-alpha.gif]]
 
-* How to use
-  There are [[https://cxan.kdr2.com/kittle-buffer/][pre-built binaries hosted here]]:
-  - [[https://cxan.kdr2.com/kittle-buffer/kittle-buffer-linux-v0.1.zip][Linux]]
-  - [[https://cxan.kdr2.com/kittle-buffer/kittle-buffer-win64-v0.1.zip][Windows]]
-  - [[https://cxan.kdr2.com/kittle-buffer/kittle-buffer-macos-v0.1.zip][macOS]]
-
-  Or you can run it from source:
-  - install racket
-  - clone the source, run ~raco pkg install~ in the project direcotry
-  - run ~kbf.rkt~
-    - ~racket kbf.rkt~ will start with the GUI;
-    - ~racket kbf.rkt src.bf~ will run the BF/KBF code in the file ~src.bf~;
-    - ~racket kbf.rkt -~ will read BF/KBF source from ~stdin~.
-
-* The builtin function-table
-  - 0: @1, identify, a function returns its only argument untouched.
-  - 1: @1, outputs the number literally, instead of converting it to a
-    char, returns the count of chars it has printed out.
-  - 21: @N (N>=1), +
-  - 22: @N (N>=1), -
-  - 23: @N (N>=1), *
-  - 24: @2, /
-  - 25: @2, modulo
-  - 26: @2, power, returns arg-0 raised to the power of arg-1.
-  - 27: @2, =
-  - 28: @2, >
-  - 29: @2, <
-  - 30: @2, >=
-  - 31: @2, <=
-  - 32: @2, bitwise or
-  - 33: @2, bitwise and
-  - 34: @2, bitwise xor
-  - 35: @2, bitwise shift
-  - 36: @2, random
-* Examples
-  The below code:
-  #+begin_src text
-    ^0^1>+21^2>>+50^3>3+47@2^0.
-  #+end_src
-
-  outputs ~a~.
-
-  - ~^0~ pushes the pointer 0 to the pointer stack;
-  - ~^1>+21~ pushes the pointer 1 to the pointer stack, moves it right
-    for 1 step, then adds its value to 21 (21 is the function ~+~);
-  - ~^2>>+50~ pushes the pointer 2 to the pointer stack, moves it
-    right for 2 steps, then adds its value from 0 to 50;
-  - ~^3>3+47~ pushes the pointer 3 to the pointer stack, moves it
-    right for 3 steps, then adds its value from 0 to 47;
-  - ~@2~ uses the top 2 pointers (^2 and ^3) as arguments, calls the
-    function 21 to which the pointer 1 is pointing, places the return
-    value (97 here) into the cell to which pointer 0 is pointing;
-  - ~^0.~ selects pointer 0 and outputs the value it points to.
+[[https://kdr2.com/project/kittle-buffer.html][Here is a more detialed documentation for KBF]].
