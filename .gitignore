@@ -1,0 +1,7 @@
+*.exe
+kbf
+kbf.app
+kbf-cli
+
+*.zip
+kbf-v*/
