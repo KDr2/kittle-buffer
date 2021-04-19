@@ -4,4 +4,6 @@ kbf.app
 kbf-cli
 
 *.zip
+*.icns
 kbf-v*/
+compiled/

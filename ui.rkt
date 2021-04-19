@@ -105,7 +105,7 @@
     (define instructions '())
 
     (define main-window (new frame%
-                             [label "KBF - Kittle-Buffer v0.2"]
+                             [label "KBF - Kittle-Buffer v0.2.1"]
                              [width 800]
                              [height 600]))
     (define canvas-buffer (new canvas%
