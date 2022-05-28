@@ -6,7 +6,9 @@
          set-char-outputer set-char-inputer
          BUFFER POINTER-STACK POINTERS
          pointer
-         set-error-handler)
+         set-error-handler
+         instruction? instruction-symbol instruction-arg
+         instruction-peer instruction-pos)
 
 (define BUFFER-SIZE 50)
 (define BUFFER (make-vector BUFFER-SIZE 0))
