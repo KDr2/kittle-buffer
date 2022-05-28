@@ -135,14 +135,15 @@
                        (runtime-error '(bad-function-call . function-id)))]
              [args (map (lambda (x) (vector-ref BUFFER (hash-ref POINTERS x))) args-ptr)])
         (with-handlers
-            ([(lambda (v) #t)
-              (lambda (ex)
-                (runtime-error (cons 'bad-function-call ex)))])
-          (set! retv (apply func args)))
+         ([(lambda (v) #t)
+           (lambda (ex)
+             (runtime-error (cons 'bad-function-call ex)))])
+         (set! retv (apply func args)))
         (vector-set! BUFFER (hash-ref POINTERS retv-ptr) retv))))
 
 ;; -- parser --
-;; instructions is a list of vector(symbol arg peer pos)
+(struct instruction (symbol arg peer pos)
+        #:mutable #:transparent)
 
 (define (instr? chr)
   (case chr
@@ -177,55 +178,55 @@
 (define (parse-0 str)
   (let ([instructions '()]
         [current-ins-start 0]
-        [current-ins (make-vector 4 -1)]
+        [current-ins (instruction -1 -1 -1 -1)]
         [str (remove-bang str)])
     (for ([chr str]
           [idx (in-range (string-length str))])
-      (cond
-       [(instr? chr) (begin
-                       (when (and (> idx 0) (instr? (vector-ref current-ins 0)))
-                         (vector-set! current-ins 3 (cons (vector-ref current-ins 3) (- idx 1)))
-                         (set! instructions (append instructions (list current-ins)))
-                         (set! current-ins-start idx)
-                         (set! current-ins (make-vector 4 -1)))
-                       (vector-set! current-ins 3 idx)
-                       (vector-set! current-ins 0 chr))]
-       [(char-numeric? chr) (if (can-have-arg (vector-ref current-ins 0))
-                                (let ([n (- (char->integer chr) 48)]
-                                      [a (vector-ref current-ins 1)])
-                                  (if (< a 0)
-                                      (vector-set! current-ins 1 n)
-                                      (vector-set! current-ins 1 (+ n (* 10 a)))))
-                                (parse-error (cons 'bad-arg current-ins)))]
-       [(char-whitespace? chr) '()]
-       [else (parse-error (cons 'bad-instruction (cons chr idx)))]))
-    (vector-set! current-ins 3
-                 (cons (vector-ref current-ins 3) (- (string-length str) 1)))
+         (cond
+          [(instr? chr) (begin
+                          (when (and (> idx 0) (instr? (instruction-symbol current-ins)))
+                            (set-instruction-pos! current-ins (cons (instruction-pos current-ins) (- idx 1)))
+                            (set! instructions (append instructions (list current-ins)))
+                            (set! current-ins-start idx)
+                            (set! current-ins (instruction -1 -1 -1 -1)))
+                          (set-instruction-pos! current-ins idx)
+                          (set-instruction-symbol! current-ins chr))]
+          [(char-numeric? chr) (if (can-have-arg (instruction-symbol current-ins))
+                                   (let ([n (- (char->integer chr) 48)]
+                                         [a (instruction-arg current-ins)])
+                                     (if (< a 0)
+                                         (set-instruction-arg! current-ins n)
+                                         (set-instruction-arg! current-ins (+ n (* 10 a)))))
+                                   (parse-error (cons 'bad-arg current-ins)))]
+          [(char-whitespace? chr) '()]
+          [else (parse-error (cons 'bad-instruction (cons chr idx)))]))
+    (set-instruction-pos! current-ins
+                          (cons (instruction-pos current-ins) (- (string-length str) 1)))
     (set! instructions (append instructions (list current-ins)))
     instructions))
 
 ;; fix arguments
 (define (parse-1 instructions)
   (for ([ins instructions])
-    (when (< (vector-ref ins 1) 0)
-      (case (vector-ref ins 0)
-        [(#\+ #\- #\< #\>) (vector-set! ins 1 1)]
-        [(#\@) (parse-error (cons 'bad-arg ins))]
-        [else '()])))
+       (when (< (instruction-arg ins) 0)
+         (case (instruction-symbol ins)
+           [(#\+ #\- #\< #\>) (set-instruction-arg! ins 1)]
+           [(#\@) (parse-error (cons 'bad-arg ins))]
+           [else '()])))
   instructions)
 
 ;; find [] pairs
 (define (parse-2 instructions)
   (let ([lefts '()])
     (for ([i (in-range (length instructions))])
-      (when (char=? #\[ (vector-ref (list-ref instructions i) 0))
-        (set! lefts (cons (list-tail instructions i) lefts)))
-      (when (char=? #\] (vector-ref (list-ref instructions i) 0))
-        (when (= 0 (length lefts))
-          (parse-error (cons 'mismatch-brackets 'redundant-right)))
-        (vector-set! (caar lefts) 2 (list-tail instructions i))
-        (vector-set! (list-ref instructions i) 2 (car lefts))
-        (set! lefts (cdr lefts))))
+         (when (char=? #\[ (instruction-symbol (list-ref instructions i)))
+           (set! lefts (cons (list-tail instructions i) lefts)))
+         (when (char=? #\] (instruction-symbol (list-ref instructions i)))
+           (when (= 0 (length lefts))
+             (parse-error (cons 'mismatch-brackets 'redundant-right)))
+           (set-instruction-peer! (caar lefts) (list-tail instructions i))
+           (set-instruction-peer! (list-ref instructions i) (car lefts))
+           (set! lefts (cdr lefts))))
     (when (not (= 0 (length lefts)))
       (parse-error (cons 'mismatch-brackets 'redundant-left))))
   instructions)
@@ -236,28 +237,28 @@
 ;; -- execution --
 
 (define (execute-1 ins)
-  (case (vector-ref ins 0)
-    [(#\+) (ins-plus (vector-ref ins 1))]
-    [(#\-) (ins-minus (vector-ref ins 1))]
-    [(#\<) (ins-left (vector-ref ins 1))]
-    [(#\>) (ins-right (vector-ref ins 1))]
+  (case (instruction-symbol ins)
+    [(#\+) (ins-plus (instruction-arg ins))]
+    [(#\-) (ins-minus (instruction-arg ins))]
+    [(#\<) (ins-left (instruction-arg ins))]
+    [(#\>) (ins-right (instruction-arg ins))]
     [(#\,) (ins-comma)]
     [(#\.) (ins-dot)]
-    [(#\^) (ins-caret (vector-ref ins 1))]
-    [(#\@) (ins-at (vector-ref ins 1))]
+    [(#\^) (ins-caret (instruction-arg ins))]
+    [(#\@) (ins-at (instruction-arg ins))]
     [(#\?) '()]
     [else (runtime-error (cons 'bad-instruction ins))]))
 
 (define (execute instructions)
   (when (not (equal? instructions '()))
     (let ([ins (car instructions)])
-      (case (vector-ref ins 0)
+      (case (instruction-symbol ins)
         [(#\[) (if (= (current-value) 0)
-                   (execute (cdr (vector-ref ins 2)))
+                   (execute (cdr (instruction-peer ins)))
                    (execute (cdr instructions)))]
         [(#\]) (if (= (current-value) 0)
                    (execute (cdr instructions))
-                   (execute (cdr (vector-ref ins 2))))]
+                   (execute (cdr (instruction-peer ins))))]
         [else (begin
                 (execute-1 ins)
                 (execute (cdr instructions)))]))))
@@ -266,13 +267,13 @@
   (if (equal? instructions '())
       (cons '#() '())
       (let ([ins (car instructions)])
-        (case (vector-ref ins 0)
+        (case (instruction-symbol ins)
           [(#\[) (if (= (current-value) 0)
-                     (cons ins (cdr (vector-ref ins 2)))
+                     (cons ins (cdr (instruction-peer ins)))
                      (cons ins (cdr instructions)))]
           [(#\]) (if (= (current-value) 0)
                      (cons ins (cdr instructions))
-                     (cons ins (cdr (vector-ref ins 2))))]
+                     (cons ins (cdr (instruction-peer ins))))]
           [else (begin
                   (execute-1 ins)
                   (cons ins (cdr instructions)))]))))

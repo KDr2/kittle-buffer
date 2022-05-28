@@ -12,8 +12,8 @@
 
 (define cur-arity 0)
 (define (update-arity ins)
-  (if (char=? #\@ (vector-ref ins 0))
-      (set! cur-arity (vector-ref ins 1))
+  (if (char=? #\@ (instruction-symbol ins))
+      (set! cur-arity (instruction-arg ins))
       (set! cur-arity 0)))
 
 (define no-brush (new brush% [style 'transparent]))
@@ -59,14 +59,14 @@
   (send dc draw-text "Value" 50 90)
   (for ([i (in-range (vector-length BUFFER))]
         [v BUFFER])
-    (send dc set-brush (brush-for-data i))
-    (send dc draw-rectangle (* (+ i 3) 42) 40 40 80)
-    (send dc draw-line (* (+ i 3) 42) 80 (+ 39 (* (+ i 3) 42)) 80)
-    (send dc draw-text (format "~a" i) (+ 4 (* (+ i 3) 42)) 52)
-    (send dc draw-text (format "~a" v) (+ 4 (* (+ i 3) 42)) 92))
+       (send dc set-brush (brush-for-data i))
+       (send dc draw-rectangle (* (+ i 3) 42) 40 40 80)
+       (send dc draw-line (* (+ i 3) 42) 80 (+ 39 (* (+ i 3) 42)) 80)
+       (send dc draw-text (format "~a" i) (+ 4 (* (+ i 3) 42)) 52)
+       (send dc draw-text (format "~a" v) (+ 4 (* (+ i 3) 42)) 92))
   (send dc set-brush no-brush)
   (for ([(k v) POINTERS])
-    (draw-pointer dc (+ 20 (* (+ v 3) 42)) 120 k)))
+       (draw-pointer dc (+ 20 (* (+ v 3) 42)) 120 k)))
 
 (define (draw-pointer-stack canvas dc)
   (send dc set-smoothing 'aligned)
@@ -78,14 +78,13 @@
   (send dc draw-text "Position" 50 80)
   (for ([i (in-range (length POINTER-STACK))]
         [p POINTER-STACK])
-    (send dc set-pen (if (= i 0) "red" "black") 1 'solid)
-    (send dc set-brush (brush-for-ptr i))
-    (send dc draw-rectangle (* (+ i 3) 42) 30 40 80)
-    (send dc draw-line (* (+ i 3) 42) 70 (+ 39 (* (+ i 3) 42)) 70)
-    (send dc draw-text (format "~a" p) (+ 12 (* (+ i 3) 42)) 42)
-    (send dc draw-text (format "~a" (hash-ref POINTERS p)) (+ 12 (* (+ i 3) 42)) 82)
-    (send dc set-pen "black" 1 'solid)))
-
+       (send dc set-pen (if (= i 0) "red" "black") 1 'solid)
+       (send dc set-brush (brush-for-ptr i))
+       (send dc draw-rectangle (* (+ i 3) 42) 30 40 80)
+       (send dc draw-line (* (+ i 3) 42) 70 (+ 39 (* (+ i 3) 42)) 70)
+       (send dc draw-text (format "~a" p) (+ 12 (* (+ i 3) 42)) 42)
+       (send dc draw-text (format "~a" (hash-ref POINTERS p)) (+ 12 (* (+ i 3) 42)) 82)
+       (send dc set-pen "black" 1 'solid)))
 
 
 (define style-delta-red (let ([delta (make-object style-delta%)])
@@ -189,9 +188,9 @@
                               (init-value 50)))
 
     (define chb-pause-at-q (new check-box%
-                              (label "Pause at ?")
-                              (parent panel-buttons)
-                              (value #f)))
+                                (label "Pause at ?")
+                                (parent panel-buttons)
+                                (value #f)))
 
     (define  panel-code (new panel:horizontal-dragable% ; horizontal-panel%
                              [parent main-window]
