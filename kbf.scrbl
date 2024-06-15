@@ -7,7 +7,8 @@
   (make-element
    (make-style #f
                (list (make-alt-tag "img")
-                     (make-attributes `((src . ,src)))))
+                     (make-attributes `((src . ,src)
+                                        (style . "max-width: 100%;")))))
    ""))
 
 
