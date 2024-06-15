@@ -4,5 +4,6 @@
 ;; (define build-deps '("scribble-lib" "racket-doc" "rackunit-lib"))
 (define pkg-desc "Kittle-Buffer, an extended Brainf**k implementation.")
 (define version "0.2.1")
+(define test-omit-paths '("kbf.rkt" "kbf-cli.rkt"))
 (define pkg-authors '(Killian))
 (define license '(Apache-2.0 OR MIT))
